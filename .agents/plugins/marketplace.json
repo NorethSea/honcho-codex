@@ -1,7 +1,7 @@
 {
-  "name": "honcho-codex",
+  "name": "honcho-codex-personal",
   "interface": {
-    "displayName": "Honcho Codex"
+    "displayName": "Honcho Codex Personal"
   },
   "plugins": [
     {
