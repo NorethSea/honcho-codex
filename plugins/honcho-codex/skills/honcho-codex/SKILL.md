@@ -52,13 +52,19 @@ command -v honcho
 honcho doctor --json
 ```
 
-Check whether `HONCHO_API_KEY` is available:
+Check whether `HONCHO_API_KEY` is available in the current shell:
 
 ```bash
 test -n "$HONCHO_API_KEY" && echo configured || echo missing
 ```
 
-If missing, tell the user to set it outside the chat:
+A `missing` result only means the current diagnostic shell does not expose the
+variable. It does not by itself prove that Codex hooks or a local Honcho service
+are misconfigured. Treat `python3 -m honcho_codex.status --cwd "$PROJECT_CWD"`
+returning session context as the stronger runtime signal.
+
+If the status lookup fails because no API key is configured anywhere, tell the
+user to set it outside the chat:
 
 ```bash
 export HONCHO_API_KEY="your-key"
