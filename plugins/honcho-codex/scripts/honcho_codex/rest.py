@@ -141,14 +141,23 @@ class HonchoClient:
         }
         return json.dumps(clean, indent=2, ensure_ascii=False)
 
-    def peer_card(self) -> list[str] | None:
-        self.ensure_peer(self.config.user_peer)
-        result = self._request("GET", self._ws_path("peers", self.config.user_peer, "card"))
+    def peer_card(self, peer_id: str | None = None) -> list[str] | None:
+        peer = peer_id or self.config.user_peer
+        self.ensure_peer(peer)
+        result = self._request("GET", self._ws_path("peers", peer, "card"))
         if isinstance(result, dict):
             card = result.get("card") or result.get("peer_card")
             if isinstance(card, list):
                 return [str(item) for item in card]
         return None
+
+    def user_peer_card(self) -> list[str] | None:
+        return self.peer_card(self.config.user_peer)
+
+    def assistant_peer_card(self) -> list[str] | None:
+        if self.config.assistant_peer == self.config.user_peer:
+            return None
+        return self.peer_card(self.config.assistant_peer)
 
     def doctor(self) -> dict[str, Any]:
         # Uncached connectivity probe — always hits the network (idempotent get-or-create).

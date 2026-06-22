@@ -35,10 +35,22 @@ def format_memory_context(
     context: str | None,
     representation: str | None,
     card: list[str] | None = None,
+    assistant_card: list[str] | None = None,
+    *,
+    user_peer: str | None = None,
+    assistant_peer: str | None = None,
 ) -> str:
     parts = [f"Honcho session: {session_name}"]
     if card:
-        parts.append("Profile:\n" + "\n".join(card))
+        label = f"Profile ({user_peer}):" if user_peer else "Profile:"
+        parts.append(label + "\n" + "\n".join(card))
+    if assistant_card:
+        label = (
+            f"Assistant profile ({assistant_peer}):"
+            if assistant_peer
+            else "Assistant profile:"
+        )
+        parts.append(label + "\n" + "\n".join(assistant_card))
     if context:
         parts.append("Session context:\n" + context.strip())
     if representation:

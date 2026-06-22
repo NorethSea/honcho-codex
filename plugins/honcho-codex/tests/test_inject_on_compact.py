@@ -96,6 +96,14 @@ class RecordingClient:
         self.calls.append("peer_card")
         return ["card"]
 
+    def user_peer_card(self, *args, **kwargs):
+        self.calls.append("user_peer_card")
+        return ["user-card"]
+
+    def assistant_peer_card(self, *args, **kwargs):
+        self.calls.append("assistant_peer_card")
+        return ["assistant-card"]
+
     def add_message(self, *args, **kwargs):
         self.calls.append("add_message")
 
@@ -132,14 +140,16 @@ def test_compact_off_skips_rest_and_injects_nothing(monkeypatch, capsys):
 def test_compact_full_keeps_current_behavior(monkeypatch, capsys):
     client, _, out = _run_session_start(monkeypatch, capsys, "compact", "full")
     assert "session_context" in client.calls
-    assert "peer_card" in client.calls
+    assert "user_peer_card" in client.calls
+    assert "assistant_peer_card" in client.calls
     assert "[Honcho Memory]" in out
 
 
 def test_startup_source_unaffected_by_slim_mode(monkeypatch, capsys):
     client, _, out = _run_session_start(monkeypatch, capsys, "startup", "slim")
     assert "session_context" in client.calls
-    assert "peer_card" in client.calls
+    assert "user_peer_card" in client.calls
+    assert "assistant_peer_card" in client.calls
     assert "[Honcho Memory]" in out
 
 

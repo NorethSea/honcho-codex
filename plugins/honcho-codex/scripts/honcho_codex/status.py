@@ -21,6 +21,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     session_name = cfg.session_name_for_cwd(args.cwd)
     tokens = args.tokens if args.tokens is not None else cfg.context_tokens
     client = HonchoClient(cfg)
+    user_peer_card = client.user_peer_card()
+    assistant_peer_card = client.assistant_peer_card()
 
     out = {
         "configured": bool(cfg.api_key),
@@ -32,7 +34,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         "sessionPeerPrefix": cfg.session_peer_prefix,
         "session": session_name,
         "sessionContext": client.session_context(session_name, tokens),
-        "peerCard": client.peer_card(),
+        "peerCard": user_peer_card,
+        "userPeerCard": user_peer_card,
+        "assistantPeerCard": assistant_peer_card,
     }
     print(json.dumps(out, indent=2, ensure_ascii=False))
 

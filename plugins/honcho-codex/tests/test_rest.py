@@ -291,6 +291,30 @@ def test_peer_card_returns_list(monkeypatch, tmp_path):
     assert out == ["Name: Rafa", "Lang: PT"]
 
 
+def test_peer_card_can_read_assistant_peer(monkeypatch, tmp_path):
+    _point_state(monkeypatch, tmp_path)
+
+    def handler(method, url, headers, body):
+        if url.endswith("/peers/codex/card"):
+            return b'{"peer_card": ["IDENTITY: Name: Codex"]}'
+        return b"{}"
+
+    calls = install_transport(monkeypatch, handler)
+    client = rest.HonchoClient(cfg())
+    out = client.assistant_peer_card()
+    card_call = next(c for c in calls if c["url"].endswith("/card"))
+    assert card_call["url"].endswith("/v3/workspaces/test-ws/peers/codex/card")
+    assert out == ["IDENTITY: Name: Codex"]
+
+
+def test_assistant_peer_card_skips_duplicate_user_peer(monkeypatch, tmp_path):
+    _point_state(monkeypatch, tmp_path)
+    calls = install_transport(monkeypatch, lambda *a: b"{}")
+    client = rest.HonchoClient(cfg(assistant_peer="user"))
+    assert client.assistant_peer_card() is None
+    assert not any(c["url"].endswith("/card") for c in calls)
+
+
 def test_peer_card_returns_none_when_empty(monkeypatch, tmp_path):
     _point_state(monkeypatch, tmp_path)
     install_transport(monkeypatch, lambda *a: b"{}")
@@ -309,6 +333,7 @@ def test_doctor_returns_ok(monkeypatch, tmp_path):
 
 def test_client_is_drop_in_for_cli():
     for name in ("ensure_workspace", "ensure_peer", "ensure_session",
-                 "add_message", "session_context", "peer_card", "doctor"):
+                 "add_message", "session_context", "peer_card",
+                 "user_peer_card", "assistant_peer_card", "doctor"):
         assert hasattr(rest.HonchoClient, name), name
         assert hasattr(HonchoCli, name), name

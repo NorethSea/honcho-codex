@@ -112,12 +112,19 @@ def _inject_context(
     context: str | None,
     representation: str | None,
     card: list[str] | None = None,
+    assistant_card: list[str] | None = None,
+    *,
+    user_peer: str | None = None,
+    assistant_peer: str | None = None,
 ) -> None:
     additional_context = "[Honcho Memory]\n" + format_memory_context(
         session_name,
         context,
         representation,
         card,
+        assistant_card,
+        user_peer=user_peer,
+        assistant_peer=assistant_peer,
     )
     _json_out(
         {
@@ -167,13 +174,24 @@ def main() -> int:
                 )
                 return 0
             context = client.session_context(session_name, config.context_tokens)
-            card = client.peer_card()
+            card = client.user_peer_card()
+            assistant_card = client.assistant_peer_card()
             # Conclusions (representation) are intentionally NOT injected: the Honcho
             # backend's limit_to_session is a no-op for the semantic/most-derived branches,
             # so session-scoped conclusions leak cross-project. We inject the correctly-scoped
-            # session summary + the global peerCard (identity), matching the Claude plugin.
+            # session summary + global peer cards (identity), matching the Claude plugin's
+            # user profile while also carrying this Codex assistant's stable identity.
             # See honcho-install/docs/honcho-upstream-issue-limit-to-session.md
-            _inject_context("SessionStart", session_name, context, None, card)
+            _inject_context(
+                "SessionStart",
+                session_name,
+                context,
+                None,
+                card,
+                assistant_card,
+                user_peer=config.user_peer,
+                assistant_peer=config.assistant_peer,
+            )
             return 0
 
         if event_name == "UserPromptSubmit":
@@ -191,10 +209,20 @@ def main() -> int:
             if not config.inject_user_prompt_context:
                 return 0
             context = client.session_context(session_name, config.context_tokens)
-            card = client.peer_card()
+            card = client.user_peer_card()
+            assistant_card = client.assistant_peer_card()
             # See note above: conclusions leak via the backend bug, so inject
-            # summary (scoped) + peerCard (global identity) only.
-            _inject_context("UserPromptSubmit", session_name, context, None, card)
+            # summary (scoped) + peer cards (global identity) only.
+            _inject_context(
+                "UserPromptSubmit",
+                session_name,
+                context,
+                None,
+                card,
+                assistant_card,
+                user_peer=config.user_peer,
+                assistant_peer=config.assistant_peer,
+            )
             return 0
 
         if event_name == "Stop":

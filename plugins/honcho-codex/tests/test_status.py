@@ -24,8 +24,10 @@ def test_status_outputs_resolved_config_and_context(monkeypatch, tmp_path, capsy
     def handler(method, url, headers, body):
         if "/context" in url:
             return b'{"summary": "project summary", "messages": [{"peer_id": "rafa", "content": "hello"}]}'
-        if url.endswith("/card"):
+        if url.endswith("/peers/rafa/card"):
             return b'{"card": ["Name: Rafa"]}'
+        if url.endswith("/peers/assistant/card"):
+            return b'{"card": ["IDENTITY: Name: Assistant"]}'
         return b"{}"
 
     install_transport(monkeypatch, handler)
@@ -39,3 +41,5 @@ def test_status_outputs_resolved_config_and_context(monkeypatch, tmp_path, capsy
     assert out["session"] == "rafa-repo"
     assert "project summary" in out["sessionContext"]
     assert out["peerCard"] == ["Name: Rafa"]
+    assert out["userPeerCard"] == ["Name: Rafa"]
+    assert out["assistantPeerCard"] == ["IDENTITY: Name: Assistant"]

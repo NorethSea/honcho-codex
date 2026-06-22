@@ -1,6 +1,6 @@
 {
   "name": "honcho-codex",
-  "version": "0.2.5+codex.20260616022710",
+  "version": "0.2.5+codex.20260622084916",
   "description": "Honcho memory integration for Codex lifecycle hooks",
   "author": {
     "name": "Honcho Codex Contributors",

@@ -185,6 +185,29 @@ class HonchoCli:
                 return [str(item) for item in card]
         return None
 
+    def user_peer_card(self) -> list[str] | None:
+        return self.peer_card()
+
+    def assistant_peer_card(self) -> list[str] | None:
+        if self.config.assistant_peer == self.config.user_peer:
+            return None
+        self.ensure_peer(self.config.assistant_peer)
+        result = self._run(
+            [
+                "peer",
+                "card",
+                self.config.assistant_peer,
+                "--workspace",
+                self.config.workspace,
+                "--json",
+            ]
+        )
+        if isinstance(result, dict):
+            card = result.get("card") or result.get("peer_card")
+            if isinstance(card, list):
+                return [str(item) for item in card]
+        return None
+
     def representation(self, session_name: str) -> str | None:
         self.ensure_session(session_name)
         result = self._run(
